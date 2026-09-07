@@ -1,34 +1,41 @@
-pipeline{
-    agent { label 'dev-server' }
-    
-    stages{
-        stage("Code Clone"){
-            steps{
-                echo "Code Clone Stage"
-                git url: "https://github.com/LondheShubham153/node-todo-cicd.git", branch: "master"
-            }
-        }
-        stage("Code Build & Test"){
-            steps{
-                echo "Code Build Stage"
-                sh "docker build -t node-app ."
-            }
-        }
-        stage("Push To DockerHub"){
-            steps{
-                withCredentials([usernamePassword(
-                    credentialsId:"dockerHubCreds",
-                    usernameVariable:"dockerHubUser", 
-                    passwordVariable:"dockerHubPass")]){
-                sh 'echo $dockerHubPass | docker login -u $dockerHubUser --password-stdin'
-                sh "docker image tag node-app:latest ${env.dockerHubUser}/node-app:latest"
-                sh "docker push ${env.dockerHubUser}/node-app:latest"
+@Library('shared') _ 
+pipeline {
+    agent {label 'shanu'}
+
+    stages {
+        stage('Hello') {
+            steps {
+                script{
+                    hello()
                 }
             }
         }
-        stage("Deploy"){
-            steps{
-                sh "docker compose down && docker compose up -d --build"
+        stage('clone') {
+            steps {
+                script{
+                    clone("https://github.com/kumarshanu3355/node-todo-cicd.git", "master")
+                }
+            }
+        }
+        stage('build') {
+            steps {
+                script{
+                    build("todo-image", "latest")
+                }
+            }
+        }
+        stage('DockerPush') {
+            steps {
+                script{
+                    docker_push("todo-image", "latest", "kumarshanu3355")
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                script{
+                    deploy("todo-image", "latest", "8000", "todo-cont")
+                }
             }
         }
     }
