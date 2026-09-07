@@ -27,7 +27,7 @@ pipeline {
         stage('DockerPush') {
             steps {
                 script{
-                    docker_push("todo-image", "latest", "kumarshanu3355")}
+                    docker_push("todo-image", "latest", "kumarshanu3355")
                 }
             }
         }
